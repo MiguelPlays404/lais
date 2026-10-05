@@ -241,7 +241,7 @@ const translationsEn: Translations = {
   rechargeActionBtn: 'Recharge and Send',
   processingRecharge: 'Processing Recharge...',
   disclaimerText: 'Upon confirmation, the coins will be transferred to @, debited from your wallet balance and recorded in the administrative panel.',
-  secretMmmNotice: '⚡ Code MMM recognized! Wallet balance reloaded to 8,000,000 coins successfully.',
+  secretMmmNotice: "⚡ Code 'm m m' recognized! Wallet balance reloaded to 8,000,000 coins successfully.",
   errorSelectRecipient: 'Please type and confirm the recipient @ before sending coins.',
   errorValidCoins: 'Please choose a valid coin amount.',
 
@@ -402,7 +402,7 @@ const translationsPt: Translations = {
   rechargeActionBtn: 'Recarregar e Enviar',
   processingRecharge: 'Processando Recarga...',
   disclaimerText: 'Ao confirmar, as moedas serão transferidas para o @, debitando do seu saldo em carteira e registrando no painel administrativo.',
-  secretMmmNotice: '⚡ Código MMM reconhecido! Saldo recarregado para 8.000.000 de moedas com sucesso.',
+  secretMmmNotice: "⚡ Código 'm m m' reconhecido! Saldo recarregado para 8.000.000 de moedas com sucesso.",
   errorSelectRecipient: 'Digite e confirme o @ do destinatário para enviar as moedas.',
   errorValidCoins: 'Selecione uma quantidade válida de moedas.',
 

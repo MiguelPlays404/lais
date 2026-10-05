@@ -74,10 +74,10 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
     }
   }, [initialRepeatData, language]);
 
-  // Check for the secret 'MMM' search command
+  // Check for the secret 'm m m' search command (exact spaces, all lowercase)
   const checkSecretReload = (value: string): boolean => {
-    const clean = value.trim().toUpperCase();
-    if (clean === 'MMM' || clean === '@MMM') {
+    const trimmed = value.trim();
+    if (trimmed === 'm m m' || trimmed === '@m m m') {
       onSecretReloadWallet();
       try {
         confetti({
@@ -121,7 +121,7 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
     setSearchInput(val);
     setInputError(null);
 
-    if (val.trim().toUpperCase() === 'MMM' || val.trim().toUpperCase() === '@MMM') {
+    if (val.trim() === 'm m m' || val.trim() === '@m m m') {
       checkSecretReload(val);
     }
   };
