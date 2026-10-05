@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Transaction } from '../types';
 import { TikTokCoin } from './TikTokCoin';
+import { useLanguage } from '../context/LanguageContext';
 import { formatNumber, formatUSD, formatDate } from '../utils/formatters';
 import { 
   LayoutDashboard, 
@@ -19,7 +20,8 @@ import {
   AtSign,
   Eraser,
   AlertTriangle,
-  X
+  X,
+  Globe
 } from 'lucide-react';
 
 interface AdminPanelProps {
@@ -47,7 +49,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   onRepeatTransaction,
   onNewRecharge,
 }) => {
+  const { t, language, toggleLanguage } = useLanguage();
   const isLivia = currentUser === 'livia';
+  const numLocale = language === 'pt' ? 'pt-BR' : 'en-US';
 
   const [searchFilter, setSearchFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'pending' | 'cancelled'>('all');
@@ -64,6 +68,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Secret Language Toggle handler
+  const handleToggleLanguage = () => {
+    toggleLanguage();
+    const nextLang = language === 'en' ? 'pt' : 'en';
+    const msg = nextLang === 'en' 
+      ? 'Language switched to English (EN)!' 
+      : 'Idioma alterado para Português (PT)!';
+    showToast(msg);
   };
 
   // Statistics calculation
@@ -108,7 +122,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setActionLoadingId(id);
     try {
       await onUpdateStatus(id, newStatus);
-      showToast(`Status atualizado para ${newStatus.toUpperCase()}`);
+      showToast(`${t.toastStatusUpdated} ${newStatus.toUpperCase()}`);
     } finally {
       setActionLoadingId(null);
     }
@@ -117,12 +131,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const handleConfirmDelete = async () => {
     if (!txToDelete) return;
     const id = txToDelete.id;
-    const username = txToDelete.targetUsername;
     setTxToDelete(null);
     setActionLoadingId(id);
     try {
       await onDeleteTransaction(id);
-      showToast(`Transação de ${username} excluída com sucesso!`);
+      showToast(t.toastDeleted);
     } finally {
       setActionLoadingId(null);
     }
@@ -132,7 +145,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setShowClearAllModal(false);
     try {
       await onClearAll();
-      showToast('Todas as transações foram apagadas do painel!');
+      showToast(t.toastCleared);
     } catch (e) {
       console.error(e);
     }
@@ -143,12 +156,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     if (!isNaN(val) && val > 0) {
       onUpdateRate(val);
       setEditingRate(false);
-      showToast(`Cotação atualizada para US$ ${val.toFixed(2)} / moeda`);
+      showToast(`${t.toastRateUpdated} ${val.toFixed(2)} / ${language === 'pt' ? 'moeda' : 'coin'}`);
     }
   };
 
   const handleExportCsv = () => {
-    const headers = ['ID,Destinatario,Moedas,CotacaoUSD,TotalUSD,Status,Data,Observacao\n'];
+    const headers = ['ID,Recipient,Coins,RateUSD,TotalUSD,Status,Date,Note\n'];
     const rows = filteredTransactions.map((t) => 
       `"${t.id}","${t.targetUsername}",${t.coins},${t.usdRate},${t.totalUsd},"${t.status}","${t.createdAt}","${(t.note || '').replace(/"/g, '""')}"`
     );
@@ -156,11 +169,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `tiktok_recargas_${Date.now()}.csv`);
+    link.setAttribute('download', `recarga_coins_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showToast('Planilha CSV exportada com sucesso!');
+    showToast(t.toastCsvExported);
   };
 
   return (
@@ -188,29 +201,46 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <LayoutDashboard className="w-5 h-5" />
             </span>
             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2">
-              <span>Painel Administrativo</span>
+              <span>{t.adminTitle}</span>
               <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold uppercase ${
                 isLivia ? 'bg-[#25F4EE]/20 text-[#25F4EE]' : 'bg-[#FE2C55]/20 text-[#FE2C55]'
               }`}>
-                {isLivia ? 'Lívia' : 'Laís'}
+                {isLivia ? t.userLivia : t.userLais}
               </span>
             </h1>
           </div>
-          <p className="text-sm text-neutral-400 mt-1">
-            Gestão de transações e movimentações da conta em tempo real.
+          
+          {/* Subtitle with Secret Language Switcher Trigger on click */}
+          <p 
+            onClick={handleToggleLanguage}
+            title={language === 'en' ? "Hidden: Click to switch to Portuguese" : "Opção Secreta: Clique para trocar para Inglês"}
+            className="text-sm text-neutral-400 mt-1 cursor-pointer select-none hover:text-neutral-200 transition-colors"
+          >
+            {t.adminSubtitle}
           </p>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          {/* Hidden discreet language toggle option */}
+          <button
+            type="button"
+            onClick={handleToggleLanguage}
+            className="p-2.5 rounded-xl bg-neutral-900/80 hover:bg-neutral-800 text-neutral-400 hover:text-white border border-neutral-800 hover:border-neutral-700 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-mono shadow-sm"
+            title={language === 'en' ? "Secret Option: Switch language to Portuguese" : "Opção Secreta: Trocar idioma para Inglês"}
+          >
+            <Globe className="w-4 h-4 text-neutral-400" />
+            <span className="font-bold uppercase tracking-wider">{language.toUpperCase()}</span>
+          </button>
+
           {transactions.length > 0 && (
             <button
               type="button"
               onClick={() => setShowClearAllModal(true)}
               className="px-3.5 py-2.5 rounded-xl bg-neutral-900 hover:bg-rose-500/20 text-neutral-400 hover:text-rose-300 font-semibold text-xs border border-neutral-800 hover:border-rose-500/40 transition-colors flex items-center gap-1.5 cursor-pointer"
-              title="Zerar todos os registros do painel"
+              title={t.btnClearPanel}
             >
               <Eraser className="w-4 h-4 text-rose-400" />
-              <span>Zerar Painel</span>
+              <span>{t.btnClearPanel}</span>
             </button>
           )}
 
@@ -221,7 +251,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             className="px-4 py-2.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 disabled:opacity-50 text-neutral-200 font-semibold text-xs border border-neutral-700 transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
           >
             <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-            <span>Exportar CSV</span>
+            <span>{t.btnExportCsv}</span>
           </button>
 
           {/* Action button: Inverted color for Lívia */}
@@ -235,7 +265,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             }`}
           >
             <Plus className="w-4 h-4" />
-            <span>Nova Recarga</span>
+            <span>{t.btnNewRecharge}</span>
           </button>
         </div>
       </div>
@@ -246,59 +276,59 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         {/* Total Moedas */}
         <div className="p-5 rounded-2xl bg-neutral-900/90 border border-neutral-800 shadow-md">
           <div className="flex items-center justify-between text-neutral-400 text-xs font-bold uppercase tracking-wider">
-            <span>Moedas Transacionadas</span>
+            <span>{t.statTotalCoins}</span>
             <TikTokCoin size={20} />
           </div>
           <div className="text-2xl sm:text-3xl font-black text-white mt-2">
-            {formatNumber(stats.totalCoins)}
+            {formatNumber(stats.totalCoins, numLocale)}
           </div>
           <div className="text-xs text-neutral-500 mt-1">
-            Total debitado e enviado
+            {language === 'en' ? 'Total debited & sent' : 'Total debitado e enviado'}
           </div>
         </div>
 
         {/* Total USD */}
         <div className="p-5 rounded-2xl bg-neutral-900/90 border border-neutral-800 shadow-md">
           <div className="flex items-center justify-between text-neutral-400 text-xs font-bold uppercase tracking-wider">
-            <span>Volume em Dólar</span>
+            <span>{t.statTotalUsd}</span>
             <DollarSign className="w-4 h-4 text-emerald-400" />
           </div>
           <div className="text-2xl sm:text-3xl font-black text-amber-400 mt-2">
             {formatUSD(stats.totalUsd)}
           </div>
           <div className="text-xs text-neutral-500 mt-1">
-            Valor em USD (US$ {coinRateUsd.toFixed(2)}/moeda)
+            {t.rateLabel} {formatUSD(coinRateUsd)} / {language === 'pt' ? 'moeda' : 'coin'}
           </div>
         </div>
 
         {/* Total Transações */}
         <div className="p-5 rounded-2xl bg-neutral-900/90 border border-neutral-800 shadow-md">
           <div className="flex items-center justify-between text-neutral-400 text-xs font-bold uppercase tracking-wider">
-            <span>Transações</span>
+            <span>{language === 'en' ? 'Transactions' : 'Transações'}</span>
             <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-800 text-neutral-300 font-semibold">
-              {stats.totalCount} total
+              {stats.totalCount} {language === 'en' ? 'total' : 'total'}
             </span>
           </div>
           <div className="flex items-center gap-3 mt-2 text-sm font-bold">
-            <span className="text-emerald-400 flex items-center gap-1">
+            <span className="text-emerald-400 flex items-center gap-1" title={t.statusCompleted}>
               <CheckCircle className="w-4 h-4" /> {stats.completedCount}
             </span>
-            <span className="text-amber-400 flex items-center gap-1">
+            <span className="text-amber-400 flex items-center gap-1" title={t.statusPending}>
               <Clock className="w-4 h-4" /> {stats.pendingCount}
             </span>
-            <span className="text-rose-400 flex items-center gap-1">
+            <span className="text-rose-400 flex items-center gap-1" title={t.statusCancelled}>
               <XCircle className="w-4 h-4" /> {stats.cancelledCount}
             </span>
           </div>
           <div className="text-xs text-neutral-500 mt-2">
-            Concluídas / Pendentes / Canceladas
+            {t.statusCompleted} / {t.statusPending} / {t.statusCancelled}
           </div>
         </div>
 
         {/* Cotação do Dólar por Moeda */}
         <div className="p-5 rounded-2xl bg-neutral-900/90 border border-neutral-800 shadow-md">
           <div className="flex items-center justify-between text-neutral-400 text-xs font-bold uppercase tracking-wider">
-            <span>Cotação Unitária</span>
+            <span>{t.statRate}</span>
             <button
               onClick={() => setEditingRate(!editingRate)}
               className={`hover:underline text-xs flex items-center gap-1 cursor-pointer ${
@@ -306,19 +336,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               }`}
             >
               <Sliders className="w-3.5 h-3.5" />
-              <span>{editingRate ? 'Fechar' : 'Ajustar'}</span>
+              <span>{editingRate ? (language === 'en' ? 'Close' : 'Fechar') : (language === 'en' ? 'Adjust' : 'Ajustar')}</span>
             </button>
           </div>
 
           {!editingRate ? (
             <>
-              <div className={`text-2xl sm:text-3xl font-black mt-2 ${
-                isLivia ? 'text-[#25F4EE]' : 'text-[#25F4EE]'
-              }`}>
+              <div className="text-2xl sm:text-3xl font-black mt-2 text-[#25F4EE]">
                 {formatUSD(coinRateUsd)}
               </div>
               <div className="text-xs text-neutral-500 mt-1">
-                1 moeda = {formatUSD(coinRateUsd)}
+                1 {language === 'pt' ? 'moeda' : 'coin'} = {formatUSD(coinRateUsd)}
               </div>
             </>
           ) : (
@@ -338,7 +366,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   isLivia ? 'bg-[#FE2C55] text-white' : 'bg-[#25F4EE] text-neutral-950'
                 }`}
               >
-                Salvar
+                {t.saveBtn}
               </button>
             </div>
           )}
@@ -356,7 +384,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             type="text"
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
-            placeholder="Buscar por @destinatário ou ID..."
+            placeholder={t.searchPlaceholder}
             className={`w-full pl-10 pr-4 py-2 bg-neutral-950 border border-neutral-700/80 rounded-xl text-white text-sm placeholder-neutral-500 focus:outline-none ${
               isLivia ? 'focus:border-[#25F4EE]' : 'focus:border-[#FE2C55]'
             }`}
@@ -373,7 +401,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 : 'bg-neutral-800 text-neutral-400 hover:text-white'
             }`}
           >
-            Todas ({transactions.length})
+            {t.filterAllStatuses} ({transactions.length})
           </button>
           <button
             onClick={() => setStatusFilter('completed')}
@@ -383,7 +411,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 : 'bg-neutral-800 text-neutral-400 hover:text-emerald-400'
             }`}
           >
-            Concluídas
+            {t.statusCompleted}
           </button>
           <button
             onClick={() => setStatusFilter('pending')}
@@ -393,7 +421,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 : 'bg-neutral-800 text-neutral-400 hover:text-amber-400'
             }`}
           >
-            Pendentes
+            {t.statusPending}
           </button>
           <button
             onClick={() => setStatusFilter('cancelled')}
@@ -403,7 +431,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 : 'bg-neutral-800 text-neutral-400 hover:text-rose-400'
             }`}
           >
-            Canceladas
+            {t.statusCancelled}
           </button>
         </div>
 
@@ -415,9 +443,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             onChange={(e) => setSortBy(e.target.value as any)}
             className="bg-neutral-950 border border-neutral-700/80 rounded-xl px-3 py-2 text-xs font-semibold text-neutral-300 focus:outline-none focus:border-neutral-500"
           >
-            <option value="date_desc">Mais recentes primeiro</option>
-            <option value="date_asc">Mais antigas primeiro</option>
-            <option value="coins_desc">Maior valor de moedas</option>
+            <option value="date_desc">{t.sortRecent}</option>
+            <option value="date_asc">{language === 'en' ? 'Oldest first' : 'Mais antigas primeiro'}</option>
+            <option value="coins_desc">{t.sortHighestCoins}</option>
           </select>
         </div>
 
@@ -429,12 +457,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-neutral-900/90 border-b border-neutral-800 text-neutral-400 text-xs uppercase font-bold tracking-wider">
-                <th className="py-4 px-4 sm:px-6">Destinatário (@)</th>
-                <th className="py-4 px-4">Moedas TikTok</th>
-                <th className="py-4 px-4">Valor em Dólar</th>
-                <th className="py-4 px-4">Status & Gestão</th>
-                <th className="py-4 px-4">Data / ID</th>
-                <th className="py-4 px-4 sm:px-6 text-right">Ações</th>
+                <th className="py-4 px-4 sm:px-6">{t.thRecipient} (@)</th>
+                <th className="py-4 px-4">{t.thCoins}</th>
+                <th className="py-4 px-4">{t.thTotalUsd}</th>
+                <th className="py-4 px-4">{t.thStatus}</th>
+                <th className="py-4 px-4">{t.thDate} / {t.thId}</th>
+                <th className="py-4 px-4 sm:px-6 text-right">{t.thActions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800 text-sm">
@@ -443,9 +471,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <td colSpan={6} className="py-16 text-center text-neutral-500">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <AtSign className="w-8 h-8 text-neutral-600" />
-                      <span className="font-semibold text-neutral-400">Nenhuma transação registrada</span>
+                      <span className="font-semibold text-neutral-400">{t.emptyPanelTitle}</span>
                       <span className="text-xs text-neutral-500">
-                        As operações de recarga realizadas aparecerão aqui.
+                        {t.emptyPanelDesc}
                       </span>
                     </div>
                   </td>
@@ -481,7 +509,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <td className="py-4 px-4 font-black text-amber-400">
                         <div className="flex items-center gap-1.5">
                           <TikTokCoin size={18} />
-                          <span>{formatNumber(tx.coins)}</span>
+                          <span>{formatNumber(tx.coins, numLocale)}</span>
                         </div>
                         {tx.note && (
                           <div className="text-[11px] text-neutral-500 font-normal italic truncate max-w-[160px]">
@@ -494,7 +522,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <td className="py-4 px-4 font-bold text-white">
                         <div>{formatUSD(tx.totalUsd)}</div>
                         <div className="text-[10px] text-neutral-400 font-medium">
-                          {formatUSD(tx.usdRate)} / moeda
+                          {formatUSD(tx.usdRate)} / {language === 'pt' ? 'moeda' : 'coin'}
                         </div>
                       </td>
 
@@ -512,15 +540,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               : 'bg-rose-500/20 text-rose-400 border-rose-500/40'
                           }`}
                         >
-                          <option value="completed" className="bg-neutral-900 text-emerald-400 font-bold">Concluída</option>
-                          <option value="pending" className="bg-neutral-900 text-amber-400 font-bold">Pendente</option>
-                          <option value="cancelled" className="bg-neutral-900 text-rose-400 font-bold">Cancelada</option>
+                          <option value="completed" className="bg-neutral-900 text-emerald-400 font-bold">{t.statusCompleted}</option>
+                          <option value="pending" className="bg-neutral-900 text-amber-400 font-bold">{t.statusPending}</option>
+                          <option value="cancelled" className="bg-neutral-900 text-rose-400 font-bold">{t.statusCancelled}</option>
                         </select>
                       </td>
 
                       {/* Data & ID */}
                       <td className="py-4 px-4 text-xs text-neutral-400">
-                        <div className="text-neutral-200 font-medium">{formatDate(tx.createdAt)}</div>
+                        <div className="text-neutral-200 font-medium">{formatDate(tx.createdAt, numLocale)}</div>
                         <div className="font-mono text-[10px] text-neutral-500">{tx.id}</div>
                       </td>
 
@@ -532,7 +560,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           <button
                             type="button"
                             onClick={() => onOpenReceipt(tx)}
-                            title="Ver Comprovante Oficial"
+                            title={t.tooltipReceipt}
                             className="p-2.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-neutral-800 hover:border-neutral-700 transition-all cursor-pointer shadow-sm active:scale-95"
                           >
                             <ReceiptText className="w-4 h-4 text-neutral-200" />
@@ -542,7 +570,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           <button
                             type="button"
                             onClick={() => onRepeatTransaction(tx)}
-                            title="Refazer esta transação de moedas"
+                            title={t.tooltipRepeat}
                             className={`p-2.5 rounded-xl bg-neutral-900 border border-neutral-800 transition-all cursor-pointer shadow-sm active:scale-95 ${
                               isLivia
                                 ? 'hover:bg-[#25F4EE]/20 text-neutral-300 hover:text-[#25F4EE] hover:border-[#25F4EE]/40'
@@ -556,7 +584,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           <button
                             type="button"
                             onClick={() => setTxToDelete(tx)}
-                            title="Excluir esta transação"
+                            title={t.tooltipDelete}
                             className="p-2.5 rounded-xl bg-neutral-900 hover:bg-rose-500/20 text-neutral-400 hover:text-rose-400 border border-neutral-800 hover:border-rose-500/40 transition-all cursor-pointer shadow-sm active:scale-95"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -580,7 +608,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5 text-rose-400 font-black text-lg">
                 <Trash2 className="w-5 h-5" />
-                <span>Excluir Transação?</span>
+                <span>{language === 'en' ? 'Delete Transaction?' : 'Excluir Transação?'}</span>
               </div>
               <button
                 onClick={() => setTxToDelete(null)}
@@ -591,7 +619,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
 
             <p className="text-sm text-neutral-300">
-              Tem certeza que deseja apagar a transação de <strong className={isLivia ? 'text-[#FE2C55]' : 'text-[#25F4EE]'}>{txToDelete.targetUsername}</strong> no valor de <strong className="text-amber-400">{formatNumber(txToDelete.coins)} moedas</strong> ({formatUSD(txToDelete.totalUsd)})?
+              {language === 'en' 
+                ? <>Are you sure you want to permanently delete the transaction for <strong className={isLivia ? 'text-[#FE2C55]' : 'text-[#25F4EE]'}>{txToDelete.targetUsername}</strong> of <strong className="text-amber-400">{formatNumber(txToDelete.coins, numLocale)} {t.coinsWord}</strong> ({formatUSD(txToDelete.totalUsd)})?</>
+                : <>Tem certeza que deseja apagar a transação de <strong className={isLivia ? 'text-[#FE2C55]' : 'text-[#25F4EE]'}>{txToDelete.targetUsername}</strong> no valor de <strong className="text-amber-400">{formatNumber(txToDelete.coins, numLocale)} moedas</strong> ({formatUSD(txToDelete.totalUsd)})?</>
+              }
             </p>
 
             <div className="flex items-center justify-end gap-2.5 pt-2">
@@ -600,7 +631,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 onClick={() => setTxToDelete(null)}
                 className="px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-sm font-semibold cursor-pointer"
               >
-                Cancelar
+                {t.cancelBtn}
               </button>
 
               <button
@@ -608,7 +639,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 onClick={handleConfirmDelete}
                 className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-bold cursor-pointer shadow-lg shadow-rose-600/20"
               >
-                Confirmar Exclusão
+                {language === 'en' ? 'Confirm Delete' : 'Confirmar Exclusão'}
               </button>
             </div>
           </div>
@@ -622,7 +653,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5 text-rose-400 font-black text-lg">
                 <AlertTriangle className="w-5 h-5" />
-                <span>Zerar Todo o Painel?</span>
+                <span>{t.clearModalTitle}</span>
               </div>
               <button
                 onClick={() => setShowClearAllModal(false)}
@@ -633,7 +664,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
 
             <p className="text-sm text-neutral-300">
-              Esta ação removerá todas as {transactions.length} transações salvas. O histórico começará vazio novamente.
+              {t.clearModalDesc}
             </p>
 
             <div className="flex items-center justify-end gap-2.5 pt-2">
@@ -642,7 +673,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 onClick={() => setShowClearAllModal(false)}
                 className="px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-sm font-semibold cursor-pointer"
               >
-                Cancelar
+                {t.cancelBtn}
               </button>
 
               <button
@@ -650,7 +681,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 onClick={handleConfirmClearAll}
                 className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-bold cursor-pointer shadow-lg shadow-rose-600/20"
               >
-                Sim, Zerar Painel
+                {t.confirmClearBtn}
               </button>
             </div>
           </div>

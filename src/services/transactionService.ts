@@ -14,11 +14,12 @@ import { db, handleFirestoreError, OperationType } from '../firebase';
 import { Transaction } from '../types';
 
 const COLLECTION_NAME = 'transactions';
-const LOCAL_STORAGE_KEY = 'tiktok_sim_transactions_clean';
+const LOCAL_STORAGE_KEY = 'recarga_coins_transactions_v1';
+const LEGACY_STORAGE_KEY = 'tiktok_sim_transactions_clean';
 
 export function getCachedTransactions(): Transaction[] {
   try {
-    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) return parsed;

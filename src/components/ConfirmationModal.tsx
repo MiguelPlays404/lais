@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { TikTokCoin } from './TikTokCoin';
+import { useLanguage } from '../context/LanguageContext';
 import { Transaction } from '../types';
-import { formatNumber, formatUSD, formatDate } from '../utils/formatters';
+import { formatNumber, formatUSD } from '../utils/formatters';
 import { CheckCircle2, ArrowRight, Receipt, X, AtSign } from 'lucide-react';
 
 interface ConfirmationModalProps {
@@ -20,6 +21,9 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onGoToAdmin,
   onViewReceipt,
 }) => {
+  const { t, language } = useLanguage();
+  const numLocale = language === 'pt' ? 'pt-BR' : 'en-US';
+
   useEffect(() => {
     if (isOpen && transaction) {
       try {
@@ -54,7 +58,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <X className="w-5 h-5" />
         </button>
 
-        {/* Success Icon & 3D TikTok Coin */}
+        {/* Success Icon & Coin */}
         <div className="relative mx-auto w-20 h-20 mb-3 flex items-center justify-center">
           <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#FE2C55]/30 to-[#25F4EE]/30 animate-pulse blur-sm" />
           <div className="relative flex items-center justify-center">
@@ -67,11 +71,11 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
         {/* Main Status Title */}
         <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-          Moedas enviadas com sucesso!
+          {t.coinsSentSuccess}
         </h3>
         
         <p className="text-xs text-neutral-400 mt-1">
-          A recarga foi creditada com sucesso na conta informada.
+          {t.rechargeCreditedDesc}
         </p>
 
         {/* Highlight Box with ONLY @, Coins and smaller Dollar amount */}
@@ -80,7 +84,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           {/* Destinatário (@ em evidência) */}
           <div className="text-[11px] uppercase font-bold tracking-wider text-neutral-400 flex items-center justify-center gap-1">
             <AtSign className="w-3.5 h-3.5 text-[#FE2C55]" />
-            <span>Destinatário</span>
+            <span>{t.recipientLabel}</span>
           </div>
 
           <div className="text-2xl sm:text-3xl font-black text-[#25F4EE] tracking-tight">
@@ -89,21 +93,21 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
           <div className="w-full border-t border-neutral-800 my-2" />
 
-          {/* Quantia de Moedas do TikTok */}
+          {/* Quantia de Moedas Coins */}
           <div className="flex items-center justify-center gap-2">
             <TikTokCoin size={26} />
             <span className="text-2xl sm:text-3xl font-black text-amber-400">
-              {formatNumber(transaction.coins)} Moedas TikTok
+              {formatNumber(transaction.coins, numLocale)} {t.coinsWord}
             </span>
           </div>
 
           {/* Valor em Dólar abaixo com escrita menor */}
           <div className="text-xs sm:text-sm font-semibold text-neutral-300">
-            Valor em Dólar: <span className="font-extrabold text-white text-sm sm:text-base">{formatUSD(transaction.totalUsd)}</span>
+            {t.usdValueLabel} <span className="font-extrabold text-white text-sm sm:text-base">{formatUSD(transaction.totalUsd)}</span>
           </div>
 
           <div className="text-[11px] text-neutral-500">
-            Cotação: {formatUSD(transaction.usdRate)} / moeda • ID da Transação: {transaction.id.slice(-8)}
+            {t.rateInfo} {formatUSD(transaction.usdRate)} / {language === 'pt' ? 'moeda' : 'coin'} • {t.txIdLabel} {transaction.id.slice(-8)}
           </div>
         </div>
 
@@ -114,7 +118,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             onClick={onClose}
             className="flex-1 py-3 px-4 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white font-bold text-sm border border-neutral-700 transition-all cursor-pointer"
           >
-            Fazer Nova Recarga
+            {t.newRechargeBtn}
           </button>
 
           <button
@@ -125,7 +129,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             }}
             className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-[#FE2C55] to-[#E01740] hover:from-[#FF3B65] hover:to-[#F51846] text-white font-bold text-sm shadow-lg shadow-[#FE2C55]/20 transition-all cursor-pointer flex items-center justify-center gap-2"
           >
-            <span>Ver no Painel Admin</span>
+            <span>{t.viewInAdminBtn}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
@@ -138,7 +142,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             className="hover:text-white underline underline-offset-2 flex items-center gap-1 cursor-pointer"
           >
             <Receipt className="w-3.5 h-3.5" />
-            <span>Visualizar Comprovante da Transação</span>
+            <span>{t.viewReceiptLink}</span>
           </button>
         </div>
 

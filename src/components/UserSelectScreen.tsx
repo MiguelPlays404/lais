@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TikTokLogo } from './TikTokLogo';
+import { useLanguage } from '../context/LanguageContext';
 import { 
   getLockoutState, 
   recordFailedAttempt, 
@@ -19,7 +20,6 @@ import {
   ArrowRight, 
   X, 
   CheckCircle2, 
-  ShieldAlert,
   Ban
 } from 'lucide-react';
 
@@ -28,6 +28,7 @@ interface UserSelectScreenProps {
 }
 
 export const UserSelectScreen: React.FC<UserSelectScreenProps> = ({ onSelectUser }) => {
+  const { t, language } = useLanguage();
   const [selectedUserCandidate, setSelectedUserCandidate] = useState<'lais' | 'livia' | null>(null);
   const [passwordInput, setPasswordInput] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -64,7 +65,7 @@ export const UserSelectScreen: React.FC<UserSelectScreenProps> = ({ onSelectUser
     if (remainingCooldown > 0) {
       // Check if emergency code attempts are completely exhausted
       if (lockoutState.emergencyAttemptsLeft <= 0) {
-        setErrorMessage('Suas 3 tentativas do código foram esgotadas! É obrigatório aguardar o término do tempo de bloqueio.');
+        setErrorMessage(t.emergencyAttemptsExhausted);
         return;
       }
 
@@ -73,7 +74,7 @@ export const UserSelectScreen: React.FC<UserSelectScreenProps> = ({ onSelectUser
         const fresh = resetLockout();
         setLockoutState(fresh);
         setRemainingCooldown(0);
-        setSuccessNotice('🔓 Código mestre 5656 aceito! Bloqueio removido com sucesso.');
+        setSuccessNotice(t.masterCodeAccepted);
         setTimeout(() => {
           onSelectUser(selectedUserCandidate);
         }, 800);
@@ -85,16 +86,16 @@ export const UserSelectScreen: React.FC<UserSelectScreenProps> = ({ onSelectUser
       setLockoutState(state);
       
       if (attemptsLeft <= 0) {
-        setErrorMessage('Você esgotou as 3 tentativas do código! Agora é obrigatório aguardar os 45 minutos até o fim do cronômetro.');
+        setErrorMessage(t.codeExhaustedWait);
       } else {
-        setErrorMessage(`Código de emergência incorreto! Você tem mais ${attemptsLeft} ${attemptsLeft === 1 ? 'tentativa' : 'tentativas'}. Se esgotar, terá que aguardar o tempo.`);
+        setErrorMessage(`${t.codeIncorrect} ${attemptsLeft}`);
       }
       return;
     }
 
     // Normal password attempt
     if (!passwordInput.trim()) {
-      setErrorMessage('Por favor, digite a senha de acesso.');
+      setErrorMessage(t.passwordEmpty);
       return;
     }
 
@@ -102,7 +103,7 @@ export const UserSelectScreen: React.FC<UserSelectScreenProps> = ({ onSelectUser
 
     if (success) {
       setErrorMessage(null);
-      setSuccessNotice(isEmergencyUnlock ? '🔓 Código mestre aceito! Entrando...' : '✓ Senha correta! Acessando painel...');
+      setSuccessNotice(isEmergencyUnlock ? t.masterCodeAccepted : t.passwordCorrect);
       setTimeout(() => {
         onSelectUser(selectedUserCandidate);
       }, 600);
@@ -112,10 +113,10 @@ export const UserSelectScreen: React.FC<UserSelectScreenProps> = ({ onSelectUser
       setRemainingCooldown(remainingSeconds);
 
       if (isLocked) {
-        setErrorMessage(`Limite de tentativas excedido! Bloqueado por ${formatSeconds(remainingSeconds)}.`);
+        setErrorMessage(`${t.limitExceededLocked} ${formatSeconds(remainingSeconds)}.`);
       } else {
         const left = 5 - state.failedAttempts;
-        setErrorMessage(`Senha incorreta! Você tem mais ${left} ${left === 1 ? 'tentativa' : 'tentativas'} antes do bloqueio.`);
+        setErrorMessage(`${t.passwordIncorrect} ${left}`);
       }
     }
   };
@@ -126,7 +127,7 @@ export const UserSelectScreen: React.FC<UserSelectScreenProps> = ({ onSelectUser
       const remainingSecs = sec % 60;
       return `${mins}m ${remainingSecs < 10 ? '0' : ''}${remainingSecs}s`;
     }
-    return `${sec} segundos`;
+    return language === 'en' ? `${sec} seconds` : `${sec} segundos`;
   };
 
   const isEmergencyCodeDisabled = remainingCooldown > 0 && lockoutState.emergencyAttemptsLeft <= 0;
@@ -145,24 +146,24 @@ export const UserSelectScreen: React.FC<UserSelectScreenProps> = ({ onSelectUser
           <TikTokLogo size={48} />
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-900 border border-neutral-800 text-xs text-neutral-400 font-semibold mt-2">
             <Shield className="w-3.5 h-3.5 text-emerald-400" />
-            <span>tiktokrecargapro • Acesso Restrito</span>
+            <span>{t.restrictedAccess}</span>
           </div>
         </div>
 
         {/* Title */}
         <div>
           <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-            Quem está acessando?
+            {t.whoIsAccessing}
           </h1>
           <p className="text-sm text-neutral-400 mt-2">
-            Selecione o seu usuário e confirme sua senha de segurança para continuar.
+            {t.selectUserPrompt}
           </p>
         </div>
 
         {/* Cards for Laís and Lívia */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">
           
-          {/* Card 1: Laís (Pink theme) */}
+          {/* Card 1: Stefanny (Pink theme) */}
           <button
             type="button"
             onClick={() => handleCardClick('lais')}
@@ -170,30 +171,30 @@ export const UserSelectScreen: React.FC<UserSelectScreenProps> = ({ onSelectUser
           >
             <div className="flex items-center justify-between w-full mb-6">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#FE2C55] to-[#FF0050] text-white flex items-center justify-center font-black text-2xl shadow-lg shadow-[#FE2C55]/30">
-                L
+                S
               </div>
               <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-[#FE2C55]/15 border border-[#FE2C55]/30 text-[#FE2C55] flex items-center gap-1">
                 <Lock className="w-3 h-3" />
-                Protegido
+                {language === 'en' ? 'Secured' : 'Protegido'}
               </span>
             </div>
 
             <div>
               <div className="text-2xl font-black text-white group-hover:text-[#FE2C55] transition-colors">
-                Laís
+                {t.userLais}
               </div>
               <div className="text-xs text-neutral-400 mt-1">
-                Painel com tema oficial Rosa e Ciano
+                {t.laisThemeDesc}
               </div>
             </div>
 
             <div className="mt-6 pt-4 border-t border-neutral-800/80 flex items-center justify-between text-xs font-bold text-neutral-300 group-hover:text-white">
-              <span>Digitar Senha</span>
+              <span>{t.enterPasswordBtn}</span>
               <ArrowRight className="w-4 h-4 text-[#FE2C55] group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
 
-          {/* Card 2: Lívia (Inverted Cyan theme) */}
+          {/* Card 2: Vânia (Inverted Cyan theme) */}
           <button
             type="button"
             onClick={() => handleCardClick('livia')}
@@ -201,25 +202,25 @@ export const UserSelectScreen: React.FC<UserSelectScreenProps> = ({ onSelectUser
           >
             <div className="flex items-center justify-between w-full mb-6">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#25F4EE] to-[#00C8C8] text-neutral-950 flex items-center justify-center font-black text-2xl shadow-lg shadow-[#25F4EE]/30">
-                L
+                V
               </div>
               <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-[#25F4EE]/15 border border-[#25F4EE]/30 text-[#25F4EE] flex items-center gap-1">
                 <Lock className="w-3 h-3" />
-                Protegido
+                {language === 'en' ? 'Secured' : 'Protegido'}
               </span>
             </div>
 
             <div>
               <div className="text-2xl font-black text-white group-hover:text-[#25F4EE] transition-colors">
-                Lívia
+                {t.userLivia}
               </div>
               <div className="text-xs text-neutral-400 mt-1">
-                Painel com tema invertido Ciano e Rosa
+                {t.liviaThemeDesc}
               </div>
             </div>
 
             <div className="mt-6 pt-4 border-t border-neutral-800/80 flex items-center justify-between text-xs font-bold text-neutral-300 group-hover:text-white">
-              <span>Digitar Senha</span>
+              <span>{t.enterPasswordBtn}</span>
               <ArrowRight className="w-4 h-4 text-[#25F4EE] group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
@@ -229,10 +230,10 @@ export const UserSelectScreen: React.FC<UserSelectScreenProps> = ({ onSelectUser
         {/* Legal & Security Notice */}
         <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800/80 text-[11px] text-neutral-500 space-y-1">
           <div className="font-semibold text-neutral-400">
-            tiktokrecargapro • Todos os direitos reservados
+            {t.allRightsReserved}
           </div>
           <p>
-            Sistema blindado contra inspeção e atalhos de depuração. Dados protegidos por chave de criptografia.
+            {t.antiInspectionNotice}
           </p>
         </div>
 
@@ -271,10 +272,10 @@ export const UserSelectScreen: React.FC<UserSelectScreenProps> = ({ onSelectUser
               </div>
 
               <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                Acesso de {selectedUserCandidate === 'livia' ? 'Lívia' : 'Laís'}
+                {t.accessFor} {selectedUserCandidate === 'livia' ? t.userLivia : t.userLais}
               </h3>
               <p className="text-xs text-neutral-400">
-                {remainingCooldown > 0 ? "Sistema bloqueado temporariamente" : "Digite a senha de 6 dígitos para entrar no painel"}
+                {remainingCooldown > 0 ? t.systemLockedTemp : t.enterPasswordModalPrompt}
               </p>
             </div>
 
@@ -283,19 +284,19 @@ export const UserSelectScreen: React.FC<UserSelectScreenProps> = ({ onSelectUser
               <div className="p-4 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs space-y-2">
                 <div className="flex items-center gap-2 text-rose-400 font-extrabold text-sm">
                   <Clock className="w-4 h-4 shrink-0 animate-pulse" />
-                  <span>Bloqueio Ativo: {formatSeconds(remainingCooldown)}</span>
+                  <span>{t.activeLockout} {formatSeconds(remainingCooldown)}</span>
                 </div>
 
                 {isEmergencyCodeDisabled ? (
                   <div className="p-2.5 rounded-lg bg-neutral-900 border border-rose-500/50 text-rose-300 font-semibold flex items-center gap-2">
                     <Ban className="w-4 h-4 text-rose-400 shrink-0" />
-                    <span>Tentativas do código esgotadas (0 de 3). Aguarde o término do cronômetro.</span>
+                    <span>{t.emergencyAttemptsExhausted}</span>
                   </div>
                 ) : (
                   <div className="text-neutral-300">
-                    Você pode desbloquear digitando o código mestre.
+                    {t.unlockWithEmergencyCodePrompt}
                     <div className="mt-1 font-bold text-amber-400">
-                      Tentativas restantes para o código: {lockoutState.emergencyAttemptsLeft} de 3
+                      {t.emergencyAttemptsRemaining} {lockoutState.emergencyAttemptsLeft} / 3
                     </div>
                   </div>
                 )}
@@ -333,10 +334,10 @@ export const UserSelectScreen: React.FC<UserSelectScreenProps> = ({ onSelectUser
                   }}
                   placeholder={
                     isEmergencyCodeDisabled
-                      ? "Aguarde o cronômetro zerar..."
+                      ? t.waitForCountdown
                       : remainingCooldown > 0 
-                      ? `Digite o código (${lockoutState.emergencyAttemptsLeft} tentativas)` 
-                      : "Digite a senha (6 dígitos)"
+                      ? `${t.codePlaceholder} (${lockoutState.emergencyAttemptsLeft} left)` 
+                      : t.passwordPlaceholder
                   }
                   className={`w-full px-4 py-3.5 bg-neutral-900 border rounded-xl text-white font-mono text-center tracking-widest text-xl focus:outline-none transition-all ${
                     isEmergencyCodeDisabled 
@@ -359,9 +360,9 @@ export const UserSelectScreen: React.FC<UserSelectScreenProps> = ({ onSelectUser
               {/* Remaining attempts indicator */}
               {remainingCooldown === 0 && (
                 <div className="flex justify-between items-center text-[11px] text-neutral-500 px-1">
-                  <span>Tentativas da senha restantes:</span>
+                  <span>{t.passwordAttemptsRemaining}</span>
                   <span className="font-bold text-neutral-300">
-                    {5 - lockoutState.failedAttempts} de 5
+                    {5 - lockoutState.failedAttempts} / 5
                   </span>
                 </div>
               )}
@@ -386,16 +387,16 @@ export const UserSelectScreen: React.FC<UserSelectScreenProps> = ({ onSelectUser
                 } : undefined}
               >
                 {isEmergencyCodeDisabled
-                  ? 'Aguarde o Tempo de Bloqueio'
+                  ? t.waitForLockoutEnd
                   : remainingCooldown > 0 
-                  ? `Desbloquear com Código (${lockoutState.emergencyAttemptsLeft} restam)` 
-                  : 'Confirmar e Acessar'}
+                  ? `${t.unlockWithCodeBtn} (${lockoutState.emergencyAttemptsLeft})` 
+                  : t.confirmAndAccess}
               </button>
             </form>
 
             {/* Emergency Unlock Hint Footer */}
             <div className="pt-2 text-center text-[10px] text-neutral-500">
-              tiktokrecargapro • Se errar as 3 tentativas do código mestre, o tempo deve ser aguardado obrigatoriamente.
+              {t.emergencyNoticeFoot}
             </div>
 
           </div>

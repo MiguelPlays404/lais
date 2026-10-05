@@ -1,6 +1,7 @@
 import React from 'react';
 import { TikTokLogo } from './TikTokLogo';
 import { TikTokCoin } from './TikTokCoin';
+import { useLanguage } from '../context/LanguageContext';
 import { formatNumber, formatUSD } from '../utils/formatters';
 import { LayoutDashboard, Send, Eye, EyeOff, User, ArrowLeftRight } from 'lucide-react';
 
@@ -29,6 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleBalanceVisibility,
   isFirebaseConnected,
 }) => {
+  const { t, language } = useLanguage();
   const isLivia = currentUser === 'livia';
 
   return (
@@ -40,7 +42,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button 
             onClick={() => onTabChange('recharge')}
             className="flex items-center gap-2 cursor-pointer transition-transform hover:opacity-95"
-            title="Recarregar Moedas"
+            title={t.rechargeCoinsNav}
           >
             <TikTokLogo size={36} />
           </button>
@@ -53,14 +55,14 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'bg-[#FE2C55]/15 border-[#FE2C55]/40 text-[#FE2C55]'
             }`}>
               <User className="w-3.5 h-3.5" />
-              <span>{isLivia ? 'Lívia' : 'Laís'}</span>
+              <span>{isLivia ? t.userLivia : t.userLais}</span>
             </div>
 
             <button
               type="button"
               onClick={onSwitchUser}
               className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer"
-              title="Trocar de Usuário (Laís / Lívia)"
+              title={t.switchUser}
             >
               <ArrowLeftRight className="w-3.5 h-3.5" />
             </button>
@@ -79,7 +81,7 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               <Send className="w-4 h-4" />
-              <span>Recarregar Moedas</span>
+              <span>{t.rechargeCoinsNav}</span>
             </button>
 
             <button
@@ -93,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               <LayoutDashboard className="w-4 h-4" />
-              <span>Painel Administrativo</span>
+              <span>{t.adminPanelNav}</span>
               <span className="ml-1.5 px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-800 text-neutral-300">
                 {totalTransactionsCount}
               </span>
@@ -106,7 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
           
           {/* Rate indicator */}
           <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 border border-neutral-800 text-xs text-neutral-300">
-            <span className="text-neutral-400">Cotação:</span>
+            <span className="text-neutral-400">{t.rateLabel}</span>
             <span className="font-semibold text-amber-400 flex items-center gap-1">
               1 <TikTokCoin size={14} /> = {formatUSD(coinRateUsd)}
             </span>
@@ -117,12 +119,12 @@ export const Header: React.FC<HeaderProps> = ({
             <TikTokCoin size={22} animated={true} />
             <div className="text-right">
               <div className="text-[10px] uppercase tracking-wider text-neutral-400 font-bold flex items-center justify-end gap-1.5">
-                <span>Saldo em Carteira</span>
+                <span>{t.walletBalance}</span>
                 <button
                   type="button"
                   onClick={onToggleBalanceVisibility}
                   className="text-neutral-400 hover:text-white transition-colors cursor-pointer"
-                  title={isBalanceVisible ? "Ocultar saldo" : "Mostrar saldo"}
+                  title={isBalanceVisible ? t.hideBalance : t.showBalance}
                 >
                   {isBalanceVisible ? (
                     <EyeOff className="w-3.5 h-3.5" />
@@ -135,7 +137,7 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="text-sm font-extrabold text-amber-400 tracking-tight leading-none mt-0.5">
                 {isBalanceVisible ? (
                   <>
-                    {formatNumber(userSimulatedBalance)}
+                    {formatNumber(userSimulatedBalance, language === 'pt' ? 'pt-BR' : 'en-US')}
                     <span className="text-[10px] text-neutral-400 font-normal ml-1">
                       ({formatUSD(userSimulatedBalance * coinRateUsd)})
                     </span>
@@ -150,11 +152,11 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Database / Sync Status */}
           <div 
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs bg-neutral-900/90 border border-neutral-800"
-            title={isFirebaseConnected ? "Conexão Segura Ativa" : "Modo Offline"}
+            title={isFirebaseConnected ? t.connectedStatus : t.offlineStatus}
           >
             <span className={`w-2 h-2 rounded-full ${isFirebaseConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
             <span className="hidden sm:inline text-neutral-300 font-medium text-[11px]">
-              {isFirebaseConnected ? 'Conectado' : 'Offline'}
+              {isFirebaseConnected ? t.connectedStatus : t.offlineStatus}
             </span>
           </div>
 

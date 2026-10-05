@@ -1,5 +1,5 @@
-export function formatNumber(num: number): string {
-  return new Intl.NumberFormat('pt-BR').format(num);
+export function formatNumber(num: number, locale: string = 'en-US'): string {
+  return new Intl.NumberFormat(locale).format(num);
 }
 
 export function formatUSD(amount: number): string {
@@ -11,10 +11,10 @@ export function formatUSD(amount: number): string {
   }).format(amount);
 }
 
-export function formatDate(dateStr: string): string {
+export function formatDate(dateStr: string, locale: string = 'en-US'): string {
   try {
     const d = new Date(dateStr);
-    return new Intl.DateTimeFormat('pt-BR', {
+    return new Intl.DateTimeFormat(locale, {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',

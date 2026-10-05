@@ -1,6 +1,7 @@
 // Security, lockout management and anti-inspection utilities
 
-const LOCKOUT_STORAGE_KEY = 'tiktokrecargapro_auth_lockout_v2';
+const LOCKOUT_STORAGE_KEY = 'recarga_coins_auth_lockout_v3';
+const LEGACY_LOCKOUT_KEY = 'tiktokrecargapro_auth_lockout_v2';
 
 export interface LockoutState {
   failedAttempts: number;
@@ -12,7 +13,7 @@ export interface LockoutState {
 
 export function getLockoutState(): LockoutState {
   try {
-    const raw = localStorage.getItem(LOCKOUT_STORAGE_KEY);
+    const raw = localStorage.getItem(LOCKOUT_STORAGE_KEY) || localStorage.getItem(LEGACY_LOCKOUT_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (typeof parsed.lockoutUntil === 'number') {
@@ -155,17 +156,21 @@ export async function verifyPassword(input: string): Promise<{ success: boolean;
 /**
  * Initializes anti-inspection, right-click, and shortcut guards
  */
-export function initAntiInspection(onBlocked?: (action: string) => void) {
+export function initAntiInspection(onBlocked?: (action: string) => void, lang: 'en' | 'pt' = 'en') {
   const handleContextMenu = (e: MouseEvent) => {
     e.preventDefault();
-    if (onBlocked) onBlocked('Clique com botão direito desabilitado por segurança.');
+    if (onBlocked) {
+      onBlocked(lang === 'en' ? 'Right-click disabled for security reasons.' : 'Clique com botão direito desabilitado por segurança.');
+    }
     return false;
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'F12') {
       e.preventDefault();
-      if (onBlocked) onBlocked('Atalho F12 desabilitado por segurança.');
+      if (onBlocked) {
+        onBlocked(lang === 'en' ? 'F12 shortcut disabled for security reasons.' : 'Atalho F12 desabilitado por segurança.');
+      }
       return false;
     }
 
@@ -175,7 +180,9 @@ export function initAntiInspection(onBlocked?: (action: string) => void) {
        ((e.shiftKey || e.altKey) && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J' || e.key === 'c' || e.key === 'C')))
     ) {
       e.preventDefault();
-      if (onBlocked) onBlocked('Atalho de inspeção bloqueado por segurança.');
+      if (onBlocked) {
+        onBlocked(lang === 'en' ? 'Inspection shortcut blocked for security reasons.' : 'Atalho de inspeção bloqueado por segurança.');
+      }
       return false;
     }
   };

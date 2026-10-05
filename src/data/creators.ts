@@ -73,6 +73,6 @@ export function getCreatorByUsername(username: string): CreatorProfile {
     avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
     followers: `${(Math.floor(Math.random() * 850) + 50) / 10}K`,
     verified: clean.includes('oficial') || clean.includes('vip'),
-    bio: `Perfil de criador TikTok @${rawName}`,
+    bio: `Perfil de criador @${rawName}`,
   };
 }

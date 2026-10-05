@@ -6,6 +6,12 @@ interface TikTokCoinProps {
   animated?: boolean;
 }
 
+/**
+ * Coin Icon - Faithfully modeled after the attached Image 1:
+ * - Outer pale yellow border (#FEE770)
+ * - Inner warm golden disc (#FFB92E)
+ * - Pure white flat center note glyph
+ */
 export const TikTokCoin: React.FC<TikTokCoinProps> = ({ 
   className = '', 
   size = 24,
@@ -18,56 +24,23 @@ export const TikTokCoin: React.FC<TikTokCoinProps> = ({
     >
       <svg
         viewBox="0 0 100 100"
-        className="w-full h-full drop-shadow-md"
+        className="w-full h-full drop-shadow-sm"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <defs>
-          <radialGradient id="coinGradOuter" cx="30%" cy="30%" r="70%">
-            <stop offset="0%" stopColor="#FFF2A3" />
-            <stop offset="35%" stopColor="#FFC83B" />
-            <stop offset="70%" stopColor="#FA9D16" />
-            <stop offset="100%" stopColor="#C96B00" />
-          </radialGradient>
-          <linearGradient id="coinGradInner" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#FFD84D" />
-            <stop offset="50%" stopColor="#FFB319" />
-            <stop offset="100%" stopColor="#E07900" />
-          </linearGradient>
-          <linearGradient id="coinRim" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#FFF5BA" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#8C4600" stopOpacity="0.4" />
-          </linearGradient>
-          <filter id="coinShadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#B86200" floodOpacity="0.6"/>
-          </filter>
-        </defs>
+        {/* Outer pale yellow rim - Exactly matching Image 1 */}
+        <circle cx="50" cy="50" r="49" fill="#FEE770" />
 
-        {/* Outer Coin Body */}
-        <circle cx="50" cy="50" r="48" fill="url(#coinGradOuter)" />
-        <circle cx="50" cy="50" r="48" stroke="url(#coinRim)" strokeWidth="3" />
+        {/* Inner golden orange circle */}
+        <circle cx="50" cy="50" r="37.5" fill="#FFB92E" />
 
-        {/* Inner Depressed Circle */}
-        <circle cx="50" cy="50" r="39" fill="url(#coinGradInner)" filter="url(#coinShadow)" />
-        <circle cx="50" cy="50" r="39" stroke="#E38000" strokeWidth="1.5" strokeOpacity="0.6" />
-
-        {/* Embossed TikTok Music Note */}
-        <g transform="translate(32, 23) scale(0.38)">
-          <path
-            d="M52 22C54 30 60 36 68 38V49C62 49 57 47 52 44V68C52 80 42 89 30 89C18 89 8 80 8 68C8 56 18 47 30 47C33 47 36 48 38 49V61C36 60 33 59 30 59C25 59 21 63 21 68C21 73 25 77 30 77C35 77 39 73 39 68V22H52Z"
-            fill="#804100"
-            opacity="0.3"
-            transform="translate(1.5, 2)"
-          />
-          <path
-            d="M52 22C54 30 60 36 68 38V49C62 49 57 47 52 44V68C52 80 42 89 30 89C18 89 8 80 8 68C8 56 18 47 30 47C33 47 36 48 38 49V61C36 60 33 59 30 59C25 59 21 63 21 68C21 73 25 77 30 77C35 77 39 73 39 68V22H52Z"
-            fill="#FFF"
-            opacity="0.9"
-          />
-        </g>
-
-        {/* Specular Highlight */}
-        <ellipse cx="38" cy="24" rx="14" ry="6" fill="#FFFFFF" opacity="0.4" transform="rotate(-30 38 24)" />
+        {/* Clean flat white center glyph from Image 1 */}
+        <path
+          d="M50.5 28.5V54.5C48.2 50.8 44.2 48.5 39.5 48.5C31.5 48.5 25 55 25 63C25 71 31.5 77.5 39.5 77.5C47.2 77.5 53.5 71.5 53.9 64V41.8C59.8 46.2 64.8 48 70 48.2V37.2C64.5 36.8 59.8 33.8 55.8 28.5H50.5Z"
+          fill="#FFFFFF"
+        />
+        {/* Inner circle cutout for the note head */}
+        <circle cx="39.5" cy="63" r="6.2" fill="#FFB92E" />
       </svg>
     </div>
   );

@@ -23,17 +23,22 @@ import { ReceiptModal } from './components/ReceiptModal';
 import { TikTokLogo } from './components/TikTokLogo';
 import { UserSelectScreen } from './components/UserSelectScreen';
 import { initAntiInspection } from './utils/security';
+import { useLanguage } from './context/LanguageContext';
 import { ShieldAlert } from 'lucide-react';
 
-const WALLET_STORAGE_KEY = 'tiktok_wallet_balance_v3';
+const WALLET_STORAGE_KEY = 'recarga_coins_wallet_balance_v4';
+const LEGACY_WALLET_STORAGE_KEY = 'tiktok_wallet_balance_v3';
 const INITIAL_WALLET_BALANCE = 8000000; // 8 milhões de moedas
-const USER_SESSION_KEY = 'tiktok_active_user';
+const USER_SESSION_KEY = 'recarga_coins_active_user_v1';
+const LEGACY_USER_SESSION_KEY = 'tiktok_active_user';
 
 export default function App() {
+  const { t, language } = useLanguage();
+
   // Current logged in user ('lais' | 'livia' | null)
   const [currentUser, setCurrentUser] = useState<'lais' | 'livia' | null>(() => {
     try {
-      const saved = localStorage.getItem(USER_SESSION_KEY);
+      const saved = localStorage.getItem(USER_SESSION_KEY) || localStorage.getItem(LEGACY_USER_SESSION_KEY);
       if (saved === 'lais' || saved === 'livia') return saved;
     } catch (e) {
       console.warn('Could not read saved user:', e);
@@ -53,7 +58,7 @@ export default function App() {
   // Wallet balance: initialized to 8 million and persisted across usage
   const [userSimulatedBalance, setUserSimulatedBalance] = useState<number>(() => {
     try {
-      const saved = localStorage.getItem(WALLET_STORAGE_KEY);
+      const saved = localStorage.getItem(WALLET_STORAGE_KEY) || localStorage.getItem(LEGACY_WALLET_STORAGE_KEY);
       if (saved !== null) {
         const parsed = parseInt(saved, 10);
         if (!isNaN(parsed) && parsed > 0) return parsed;
@@ -84,9 +89,9 @@ export default function App() {
     const cleanup = initAntiInspection((reason) => {
       setSecurityAlert(reason);
       setTimeout(() => setSecurityAlert(null), 3000);
-    });
+    }, language);
     return cleanup;
-  }, []);
+  }, [language]);
 
   // Validate connection to Firestore on initial boot
   useEffect(() => {
@@ -160,7 +165,7 @@ export default function App() {
         coins,
         usdRate: coinRateUsd,
         totalUsd,
-        senderName: currentUser === 'livia' ? 'Lívia' : 'Laís',
+        senderName: currentUser === 'livia' ? 'Vânia' : 'Stefanny',
         status: 'completed',
         note: note || '',
         createdAt: new Date().toISOString(),
@@ -180,7 +185,7 @@ export default function App() {
       setIsConfirmationOpen(true);
     } catch (error) {
       console.error('Failed to create transaction:', error);
-      alert('Houve um erro ao registrar a recarga.');
+      alert(language === 'en' ? 'There was an error recording the recharge.' : 'Houve um erro ao registrar a recarga.');
     } finally {
       setIsLoading(false);
     }
@@ -313,7 +318,7 @@ export default function App() {
           <div className="flex items-center gap-3">
             <TikTokLogo size={22} />
             <span className="text-neutral-500 font-medium">
-              © {new Date().getFullYear()} tiktokrecargapro • Todos os direitos reservados • Painel de {currentUser === 'livia' ? 'Lívia' : 'Laís'}
+              © {new Date().getFullYear()} {t.footerCopyright} • {t.footerPanelOf} {currentUser === 'livia' ? t.userLivia : t.userLais}
             </span>
           </div>
 
@@ -326,7 +331,7 @@ export default function App() {
                   : ''
               }`}
             >
-              Recarregar
+              {t.rechargeCoinsNav}
             </button>
             <button 
               onClick={() => setCurrentTab('admin')}
@@ -336,13 +341,13 @@ export default function App() {
                   : ''
               }`}
             >
-              Painel Administrativo
+              {t.adminPanelNav}
             </button>
             <button
               onClick={handleSwitchUser}
               className="hover:text-neutral-300 text-neutral-400 underline cursor-pointer"
             >
-              Trocar de Usuário
+              {t.switchUser}
             </button>
           </div>
 

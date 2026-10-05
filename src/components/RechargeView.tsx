@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { TikTokCoin } from './TikTokCoin';
+import { useLanguage } from '../context/LanguageContext';
 import { formatNumber, formatUSD } from '../utils/formatters';
 import { 
   Search, 
@@ -32,6 +33,7 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
   initialRepeatData,
   onSecretReloadWallet,
 }) => {
+  const { t, language } = useLanguage();
   const isLivia = currentUser === 'livia';
 
   // Target username state
@@ -46,6 +48,8 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
   const [transactionNote, setTransactionNote] = useState<string>('');
   const [inputError, setInputError] = useState<string | null>(null);
   const [specialNotice, setSpecialNotice] = useState<string | null>(null);
+
+  const numLocale = language === 'pt' ? 'pt-BR' : 'en-US';
 
   // Load repeated transaction data if coming from Admin Panel "Refazer transação"
   useEffect(() => {
@@ -62,10 +66,13 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
       }
 
       setTransactionNote(initialRepeatData.note || '');
-      setSpecialNotice(`🔄 Transação carregada para repetição: ${initialRepeatData.targetUsername} com ${formatNumber(initialRepeatData.coins)} moedas.`);
+      const loadMsg = language === 'en'
+        ? `🔄 Transaction reloaded: ${initialRepeatData.targetUsername} with ${formatNumber(initialRepeatData.coins, numLocale)} coins.`
+        : `🔄 Transação carregada para repetição: ${initialRepeatData.targetUsername} com ${formatNumber(initialRepeatData.coins, numLocale)} moedas.`;
+      setSpecialNotice(loadMsg);
       setTimeout(() => setSpecialNotice(null), 6000);
     }
-  }, [initialRepeatData]);
+  }, [initialRepeatData, language]);
 
   // Check for the secret 'MMM' search command
   const checkSecretReload = (value: string): boolean => {
@@ -84,7 +91,7 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
       } catch (e) {
         // Safe fallback
       }
-      setSpecialNotice('⚡ Código MMM reconhecido! Saldo recarregado para 8.000.000 de moedas com sucesso.');
+      setSpecialNotice(t.secretMmmNotice);
       setSearchInput('');
       setConfirmedUsername('');
       setInputError(null);
@@ -101,7 +108,7 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
     if (checkSecretReload(trimmed)) return;
 
     if (!trimmed) {
-      setInputError('Por favor, digite o @ do destinatário.');
+      setInputError(t.errorSelectRecipient);
       return;
     }
     const clean = trimmed.startsWith('@') ? trimmed : `@${trimmed}`;
@@ -138,12 +145,12 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
     if (checkSecretReload(activeUser)) return;
 
     if (!activeUser || activeUser.length < 2) {
-      setInputError('Digite e confirme o @ do destinatário para enviar as moedas.');
+      setInputError(t.errorSelectRecipient);
       return;
     }
 
     if (currentCoins <= 0) {
-      setInputError('Selecione uma quantidade válida de moedas.');
+      setInputError(t.errorValidCoins);
       return;
     }
 
@@ -152,10 +159,6 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
   };
 
   const activeTarget = confirmedUsername || (searchInput.trim() ? (searchInput.trim().startsWith('@') ? searchInput.trim() : `@${searchInput.trim()}`) : '');
-
-  // Theme-specific colors
-  const primaryColor = isLivia ? '#25F4EE' : '#FE2C55';
-  const secondaryColor = isLivia ? '#FE2C55' : '#25F4EE';
 
   // Subcomponent: The 6 Presets + Custom
   const renderPresetsGrid = () => (
@@ -167,10 +170,10 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
           }`}>
             {isLivia ? 'A' : '2'}
           </span>
-          Selecione a Quantidade de Moedas
+          {t.selectCoinsTitle}
         </label>
         <span className="text-xs font-semibold text-neutral-400">
-          1 Moeda TikTok = <strong className="text-amber-400">{formatUSD(coinRateUsd)}</strong>
+          {t.oneCoinEquals} <strong className="text-amber-400">{formatUSD(coinRateUsd)}</strong>
         </span>
       </div>
 
@@ -204,9 +207,9 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
               <div className="flex items-center gap-2.5">
                 <TikTokCoin size={26} animated={isSelected} />
                 <span className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                  {formatNumber(amount)}
+                  {formatNumber(amount, numLocale)}
                 </span>
-                <span className="text-xs font-bold text-neutral-400">moedas</span>
+                <span className="text-xs font-bold text-neutral-400">{t.coinsWord}</span>
               </div>
 
               <div className="mt-3 pt-2 border-t border-neutral-800/80">
@@ -234,9 +237,9 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
             <div className="flex items-center gap-2.5">
               <TikTokCoin size={26} animated={isCustomMode} />
               <span className="text-xl sm:text-2xl font-black text-white">
-                Personalizar
+                {t.customSquare}
               </span>
-              <span className="text-xs text-neutral-400 font-semibold">(digite qualquer quantia)</span>
+              <span className="text-xs text-neutral-400 font-semibold">{t.customSquareDesc}</span>
             </div>
             <SlidersHorizontal className={`w-5 h-5 ${
               isCustomMode 
@@ -247,10 +250,12 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
 
           <div className="mt-3 pt-2 border-t border-neutral-800/80 flex items-center justify-between">
             <span className="text-xs sm:text-sm font-medium text-neutral-400">
-              {isCustomMode ? `${formatNumber(currentCoins)} moedas selecionadas` : 'Insira quantia especial'}
+              {isCustomMode 
+                ? `${formatNumber(currentCoins, numLocale)} ${t.coinsWord}` 
+                : t.customSquareDesc}
             </span>
             <span className="text-xs sm:text-sm font-bold text-amber-400">
-              {isCustomMode ? formatUSD(currentTotalUsd) : 'Calcular valor'}
+              {isCustomMode ? formatUSD(currentTotalUsd) : t.dollarConversion}
             </span>
           </div>
         </button>
@@ -265,9 +270,9 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
               isLivia ? 'text-[#FE2C55]' : 'text-[#25F4EE]'
             }`}>
               <SlidersHorizontal className="w-3.5 h-3.5" />
-              Quantidade Personalizada de Moedas:
+              {t.customAmountLabel}
             </span>
-            <span className="text-xs text-neutral-400">Cada moeda = {formatUSD(coinRateUsd)}</span>
+            <span className="text-xs text-neutral-400">{t.oneCoinEquals} {formatUSD(coinRateUsd)}</span>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -282,7 +287,7 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
                 step="100"
                 value={customInputValue}
                 onChange={(e) => setCustomInputValue(e.target.value)}
-                placeholder="Ex: 10000"
+                placeholder={t.customInputPlaceholder}
                 className={`w-full pl-11 pr-4 py-2.5 bg-neutral-950 border border-neutral-700 rounded-lg text-white font-extrabold text-lg focus:outline-none ${
                   isLivia ? 'focus:border-[#FE2C55]' : 'focus:border-[#25F4EE]'
                 }`}
@@ -290,7 +295,7 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
             </div>
 
             <div className="w-full sm:w-auto shrink-0 px-4 py-2.5 rounded-lg bg-neutral-950 border border-neutral-800 text-center sm:text-right">
-              <div className="text-[10px] text-neutral-400 uppercase">Conversão em Dólar</div>
+              <div className="text-[10px] text-neutral-400 uppercase">{t.dollarConversion}</div>
               <div className="text-base font-black text-amber-400">
                 {formatUSD(currentTotalUsd)}
               </div>
@@ -311,10 +316,10 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
           }`}>
             {isLivia ? 'B' : '1'}
           </span>
-          Destinatário da Recarga (@)
+          {t.recipientTitle}
         </label>
         <span className="text-xs text-neutral-400">
-          Digite a conta que receberá as moedas
+          {t.recipientSubtitle}
         </span>
       </div>
 
@@ -328,7 +333,7 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
             type="text"
             value={searchInput}
             onChange={handleInputChange}
-            placeholder="Digite o @ do destinatário (ex: @usuario)"
+            placeholder={t.recipientInputPlaceholder}
             className={`w-full pl-11 pr-10 py-3.5 bg-neutral-900/90 border border-neutral-700 rounded-xl text-white font-medium placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all text-base ${
               isLivia 
                 ? 'focus:border-[#25F4EE] focus:ring-[#25F4EE]/20' 
@@ -341,7 +346,7 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
               type="button"
               onClick={handleClearUsername}
               className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-neutral-400 hover:text-white transition-colors cursor-pointer"
-              title="Limpar pesquisa"
+              title={t.removeRecipientTooltip}
             >
               <X className="w-5 h-5 bg-neutral-800 rounded-full p-0.5" />
             </button>
@@ -353,7 +358,7 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
           className="px-6 py-3.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white font-bold text-sm border border-neutral-700 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-95 shrink-0"
         >
           <CheckCircle2 className={`w-4 h-4 ${isLivia ? 'text-[#FE2C55]' : 'text-[#25F4EE]'}`} />
-          <span>Confirmar @</span>
+          <span>{t.confirmAtBtn}</span>
         </button>
       </form>
 
@@ -378,11 +383,11 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
             </div>
             <div>
               <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">
-                Destinatário Selecionado
+                {t.recipientSelectedLabel}
               </div>
               <div className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2">
                 <span className={isLivia ? 'text-[#FE2C55]' : 'text-[#25F4EE]'}>{activeTarget}</span>
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" title="Pronto para envio" />
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" title={t.readyToSend} />
               </div>
             </div>
           </div>
@@ -391,14 +396,14 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
             type="button"
             onClick={handleClearUsername}
             className="p-2 rounded-xl bg-neutral-800 hover:bg-rose-500/20 text-neutral-400 hover:text-rose-400 border border-neutral-700 hover:border-rose-500/40 transition-colors cursor-pointer"
-            title="Remover destinatário"
+            title={t.removeRecipientTooltip}
           >
             <X className="w-5 h-5" />
           </button>
         </div>
       ) : (
         <div className="mt-4 p-4 rounded-xl bg-neutral-900/40 border border-dashed border-neutral-800 text-center text-neutral-500 text-xs">
-          Nenhum destinatário selecionado. Digite o @ da conta acima para transferir as moedas.
+          {t.noRecipientSelected}
         </div>
       )}
     </div>
@@ -411,21 +416,21 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
         isLivia ? 'border-[#25F4EE]/30' : 'border-neutral-800'
       }`}>
         <div>
-          <div className="text-xs text-neutral-400 uppercase font-semibold">Resumo do Envio</div>
+          <div className="text-xs text-neutral-400 uppercase font-semibold">{t.transferSummary}</div>
           <div className="text-xl sm:text-2xl font-black text-white flex items-center gap-2 mt-0.5">
-            <span>{formatNumber(currentCoins)} Moedas</span>
+            <span>{formatNumber(currentCoins, numLocale)} {t.coinsWord}</span>
             <span className="text-neutral-500 font-normal">→</span>
             <span className={`font-extrabold ${isLivia ? 'text-[#FE2C55]' : 'text-[#25F4EE]'}`}>
-              {activeTarget || '(Nenhum @ digitado)'}
+              {activeTarget || '(none)'}
             </span>
           </div>
           <div className="text-sm text-neutral-400 mt-1 font-medium">
-            Total em Dólar: <strong className="text-white font-bold">{formatUSD(currentTotalUsd)}</strong>
+            {t.totalUsdLabel}: <strong className="text-white font-bold">{formatUSD(currentTotalUsd)}</strong>
           </div>
         </div>
 
         <div className="sm:text-right">
-          <div className="text-xs text-neutral-400 uppercase font-semibold">Valor Total</div>
+          <div className="text-xs text-neutral-400 uppercase font-semibold">{t.totalUsdLabel}</div>
           <div className="text-2xl sm:text-3xl font-black text-white">
             {formatUSD(currentTotalUsd)}
           </div>
@@ -434,13 +439,13 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
 
       <div>
         <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-1.5">
-          Observação / Mensagem do Envio (Opcional):
+          {t.noteLabel}
         </label>
         <input
           type="text"
           value={transactionNote}
           onChange={(e) => setTransactionNote(e.target.value)}
-          placeholder="Ex: Presente em live, suporte ao criador..."
+          placeholder={t.notePlaceholder}
           maxLength={120}
           className="w-full px-4 py-2.5 bg-neutral-900 border border-neutral-700/80 rounded-xl text-neutral-200 text-sm focus:outline-none focus:border-neutral-500"
         />
@@ -462,19 +467,19 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
         {isLoading ? (
           <span className="flex items-center gap-2">
             <span className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            Processando Recarga...
+            {t.processingRecharge}
           </span>
         ) : (
           <>
             <TikTokCoin size={22} />
-            <span>Recarregar e Enviar ({formatUSD(currentTotalUsd)})</span>
+            <span>{t.rechargeActionBtn} ({formatUSD(currentTotalUsd)})</span>
             <ArrowRight className="w-5 h-5 ml-1" />
           </>
         )}
       </button>
 
       <p className="text-xs text-neutral-500 text-center sm:text-left">
-        Ao confirmar, as moedas serão transferidas para o @ <strong className="text-neutral-400">{activeTarget || '...'}</strong>, debitando do seu saldo em carteira e registrando no painel administrativo de {isLivia ? 'Lívia' : 'Laís'}.
+        {t.disclaimerText.replace('@', activeTarget ? `@${activeTarget.replace('@', '')}` : '...')}
       </p>
     </div>
   );
@@ -512,18 +517,18 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
           </div>
           <div>
             <div className="text-sm font-bold text-white flex items-center gap-2">
-              <span>Recarregar: Poupe cerca de 25% com uma taxa de serviços de terceiros mais baixa</span>
+              <span>{t.saveBannerText}</span>
               <Info className="w-4 h-4 text-neutral-400 cursor-pointer" />
             </div>
             <p className="text-xs text-neutral-400 mt-0.5">
-              Centro Oficial TikTok • Sessão: <strong className={isLivia ? 'text-[#25F4EE]' : 'text-[#FE2C55]'}>{isLivia ? 'Lívia' : 'Laís'}</strong> • Cotação: {formatUSD(coinRateUsd)} por TikTok Coin
+              {t.officialCenterSession} <strong className={isLivia ? 'text-[#25F4EE]' : 'text-[#FE2C55]'}>{isLivia ? t.userLivia : t.userLais}</strong> • {t.oneCoinEquals} {formatUSD(coinRateUsd)}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-auto text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
           <ShieldCheck className="w-4 h-4" />
-          <span>Transação Segura</span>
+          <span>{t.secureTransaction}</span>
         </div>
       </div>
 
