@@ -160,7 +160,7 @@ export const UserSelectScreen: React.FC<UserSelectScreenProps> = ({ onSelectUser
           </p>
         </div>
 
-        {/* Cards for Laís and Lívia */}
+        {/* Cards for Stefanny and Vânia */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">
           
           {/* Card 1: Stefanny (Pink theme) */}

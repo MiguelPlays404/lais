@@ -3,7 +3,7 @@ import confetti from 'canvas-confetti';
 import { TikTokCoin } from './TikTokCoin';
 import { useLanguage } from '../context/LanguageContext';
 import { Transaction } from '../types';
-import { formatNumber, formatUSD } from '../utils/formatters';
+import { formatNumber, formatUSD, formatRateUSD } from '../utils/formatters';
 import { CheckCircle2, ArrowRight, Receipt, X, AtSign } from 'lucide-react';
 
 interface ConfirmationModalProps {
@@ -107,7 +107,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           </div>
 
           <div className="text-[11px] text-neutral-500">
-            {t.rateInfo} {formatUSD(transaction.usdRate)} / {language === 'pt' ? 'moeda' : 'coin'} • {t.txIdLabel} {transaction.id.slice(-8)}
+            {t.rateInfo} {formatRateUSD(transaction.usdRate)} / {language === 'pt' ? 'moeda' : 'coin'} • {t.txIdLabel} {transaction.id.slice(-8)}
           </div>
         </div>
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { TikTokCoin } from './TikTokCoin';
 import { useLanguage } from '../context/LanguageContext';
-import { formatNumber, formatUSD } from '../utils/formatters';
+import { formatNumber, formatUSD, formatRateUSD } from '../utils/formatters';
 import { 
   Search, 
   CheckCircle2, 
@@ -40,11 +40,11 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
   const [searchInput, setSearchInput] = useState<string>('');
   const [confirmedUsername, setConfirmedUsername] = useState<string>('');
   
-  // Exact 6 preset squares: 500, 1000, 1500, 2000, 2500, 5000
-  const presets = [500, 1000, 1500, 2000, 2500, 5000];
-  const [selectedCoins, setSelectedCoins] = useState<number>(1000);
+  // Exact preset squares: 100, 300, 700, 1500, 3600, 7000
+  const presets = [100, 300, 700, 1500, 3600, 7000];
+  const [selectedCoins, setSelectedCoins] = useState<number>(700);
   const [isCustomMode, setIsCustomMode] = useState<boolean>(false);
-  const [customInputValue, setCustomInputValue] = useState<string>('3000');
+  const [customInputValue, setCustomInputValue] = useState<string>('10000');
   const [transactionNote, setTransactionNote] = useState<string>('');
   const [inputError, setInputError] = useState<string | null>(null);
   const [specialNotice, setSpecialNotice] = useState<string | null>(null);
@@ -173,7 +173,7 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
           {t.selectCoinsTitle}
         </label>
         <span className="text-xs font-semibold text-neutral-400">
-          {t.oneCoinEquals} <strong className="text-amber-400">{formatUSD(coinRateUsd)}</strong>
+          {t.oneCoinEquals} <strong className="text-amber-400">{formatRateUSD(coinRateUsd)}</strong>
         </span>
       </div>
 
@@ -272,7 +272,7 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
               <SlidersHorizontal className="w-3.5 h-3.5" />
               {t.customAmountLabel}
             </span>
-            <span className="text-xs text-neutral-400">{t.oneCoinEquals} {formatUSD(coinRateUsd)}</span>
+            <span className="text-xs text-neutral-400">{t.oneCoinEquals} {formatRateUSD(coinRateUsd)}</span>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -521,7 +521,7 @@ export const RechargeView: React.FC<RechargeViewProps> = ({
               <Info className="w-4 h-4 text-neutral-400 cursor-pointer" />
             </div>
             <p className="text-xs text-neutral-400 mt-0.5">
-              {t.officialCenterSession} <strong className={isLivia ? 'text-[#25F4EE]' : 'text-[#FE2C55]'}>{isLivia ? t.userLivia : t.userLais}</strong> • {t.oneCoinEquals} {formatUSD(coinRateUsd)}
+              {t.officialCenterSession} <strong className={isLivia ? 'text-[#25F4EE]' : 'text-[#FE2C55]'}>{isLivia ? t.userLivia : t.userLais}</strong> • {t.oneCoinEquals} {formatRateUSD(coinRateUsd)}
             </p>
           </div>
         </div>

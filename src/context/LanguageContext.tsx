@@ -174,8 +174,8 @@ const translationsEn: Translations = {
   // Login / User Select Screen
   whoIsAccessing: 'Who is signing in?',
   selectUserPrompt: 'Select your account and enter your security password to proceed.',
-  laisThemeDesc: 'Official Pink and Cyan theme workspace',
-  liviaThemeDesc: 'Inverted Cyan and Pink theme workspace',
+  laisThemeDesc: 'Stefanny workspace • Official Pink and Cyan theme',
+  liviaThemeDesc: 'Vânia workspace • Inverted Cyan and Pink theme',
   enterPasswordBtn: 'Enter Password',
   accessFor: 'Access for',
   systemLockedTemp: 'System temporarily locked',
@@ -335,8 +335,8 @@ const translationsPt: Translations = {
   // Login / User Select Screen
   whoIsAccessing: 'Quem está acessando?',
   selectUserPrompt: 'Selecione o seu usuário e confirme sua senha de segurança para continuar.',
-  laisThemeDesc: 'Painel com tema oficial Rosa e Ciano',
-  liviaThemeDesc: 'Painel com tema invertido Ciano e Rosa',
+  laisThemeDesc: 'Espaço de Stefanny • Tema oficial Rosa e Ciano',
+  liviaThemeDesc: 'Espaço de Vânia • Tema Ciano e Rosa invertido',
   enterPasswordBtn: 'Digitar Senha',
   accessFor: 'Acesso de',
   systemLockedTemp: 'Sistema bloqueado temporariamente',

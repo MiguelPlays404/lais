@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
+import confetti from 'canvas-confetti';
 import { Transaction } from '../types';
 import { TikTokCoin } from './TikTokCoin';
 import { useLanguage } from '../context/LanguageContext';
-import { formatNumber, formatUSD, formatDate } from '../utils/formatters';
+import { formatNumber, formatUSD, formatRateUSD, formatDate } from '../utils/formatters';
 import { 
   LayoutDashboard, 
   Search, 
@@ -35,6 +36,7 @@ interface AdminPanelProps {
   onOpenReceipt: (tx: Transaction) => void;
   onRepeatTransaction: (tx: Transaction) => void;
   onNewRecharge: () => void;
+  onSecretReloadWallet?: () => void;
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -48,6 +50,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   onOpenReceipt,
   onRepeatTransaction,
   onNewRecharge,
+  onSecretReloadWallet,
 }) => {
   const { t, language, toggleLanguage } = useLanguage();
   const isLivia = currentUser === 'livia';
@@ -156,7 +159,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     if (!isNaN(val) && val > 0) {
       onUpdateRate(val);
       setEditingRate(false);
-      showToast(`${t.toastRateUpdated} ${val.toFixed(2)} / ${language === 'pt' ? 'moeda' : 'coin'}`);
+      showToast(`${t.toastRateUpdated} ${formatRateUSD(val)} / ${language === 'pt' ? 'moeda' : 'coin'}`);
     }
   };
 
@@ -297,7 +300,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             {formatUSD(stats.totalUsd)}
           </div>
           <div className="text-xs text-neutral-500 mt-1">
-            {t.rateLabel} {formatUSD(coinRateUsd)} / {language === 'pt' ? 'moeda' : 'coin'}
+            {t.rateLabel} {formatRateUSD(coinRateUsd)} / {language === 'pt' ? 'moeda' : 'coin'}
           </div>
         </div>
 
@@ -343,21 +346,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           {!editingRate ? (
             <>
               <div className="text-2xl sm:text-3xl font-black mt-2 text-[#25F4EE]">
-                {formatUSD(coinRateUsd)}
+                {formatRateUSD(coinRateUsd)}
               </div>
               <div className="text-xs text-neutral-500 mt-1">
-                1 {language === 'pt' ? 'moeda' : 'coin'} = {formatUSD(coinRateUsd)}
+                1 {language === 'pt' ? 'moeda' : 'coin'} = {formatRateUSD(coinRateUsd)}
               </div>
             </>
           ) : (
             <div className="mt-2 flex items-center gap-2">
               <input
                 type="number"
-                step="0.01"
-                min="0.01"
+                step="any"
+                min="0.0000000001"
                 value={newRateInput}
                 onChange={(e) => setNewRateInput(e.target.value)}
-                className="w-24 px-2 py-1 bg-neutral-950 border border-neutral-700 rounded text-white text-sm font-bold"
+                className="w-36 px-2 py-1 bg-neutral-950 border border-neutral-700 rounded text-white text-sm font-bold"
               />
               <button
                 type="button"
@@ -383,7 +386,27 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           <input
             type="text"
             value={searchFilter}
-            onChange={(e) => setSearchFilter(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              setSearchFilter(val);
+              if (val.trim() === 'm m m') {
+                if (onSecretReloadWallet) {
+                  onSecretReloadWallet();
+                  try {
+                    confetti({
+                      particleCount: 100,
+                      spread: 80,
+                      origin: { y: 0.5 },
+                      colors: isLivia 
+                        ? ['#25F4EE', '#00C8C8', '#FE2C55', '#FFFFFF']
+                        : ['#FE2C55', '#25F4EE', '#FFD700', '#FFFFFF'],
+                    });
+                  } catch (err) {}
+                  showToast(t.secretMmmNotice);
+                  setSearchFilter('');
+                }
+              }
+            }}
             placeholder={t.searchPlaceholder}
             className={`w-full pl-10 pr-4 py-2 bg-neutral-950 border border-neutral-700/80 rounded-xl text-white text-sm placeholder-neutral-500 focus:outline-none ${
               isLivia ? 'focus:border-[#25F4EE]' : 'focus:border-[#FE2C55]'

@@ -11,6 +11,18 @@ export function formatUSD(amount: number): string {
   }).format(amount);
 }
 
+export function formatRateUSD(rate: number): string {
+  const str = String(rate);
+  const decimals = str.includes('.') ? str.split('.')[1].length : 0;
+  const maxDigits = Math.min(Math.max(2, decimals), 6);
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: maxDigits,
+  }).format(rate);
+}
+
 export function formatDate(dateStr: string, locale: string = 'en-US'): string {
   try {
     const d = new Date(dateStr);

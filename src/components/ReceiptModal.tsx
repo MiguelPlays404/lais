@@ -3,7 +3,7 @@ import { TikTokLogo } from './TikTokLogo';
 import { TikTokCoin } from './TikTokCoin';
 import { useLanguage } from '../context/LanguageContext';
 import { Transaction } from '../types';
-import { formatNumber, formatUSD, formatDate } from '../utils/formatters';
+import { formatNumber, formatUSD, formatRateUSD, formatDate } from '../utils/formatters';
 import { X, CheckCircle2, Copy, Check, Printer } from 'lucide-react';
 
 interface ReceiptModalProps {
@@ -91,7 +91,7 @@ ${t.dateTimeLabel} ${formatDate(transaction.createdAt, numLocale)}`;
 
           <div className="flex justify-between items-center">
             <span className="text-neutral-400">{t.coinRateLabel}</span>
-            <span className="font-medium text-neutral-300">{formatUSD(transaction.usdRate)} / {language === 'pt' ? 'moeda' : 'coin'}</span>
+            <span className="font-medium text-neutral-300">{formatRateUSD(transaction.usdRate)} / {language === 'pt' ? 'moeda' : 'coin'}</span>
           </div>
 
           <div className="flex justify-between items-center pt-2 border-t border-neutral-800 text-base">

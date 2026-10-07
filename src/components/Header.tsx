@@ -2,7 +2,7 @@ import React from 'react';
 import { TikTokLogo } from './TikTokLogo';
 import { TikTokCoin } from './TikTokCoin';
 import { useLanguage } from '../context/LanguageContext';
-import { formatNumber, formatUSD } from '../utils/formatters';
+import { formatNumber, formatUSD, formatRateUSD } from '../utils/formatters';
 import { LayoutDashboard, Send, Eye, EyeOff, User, ArrowLeftRight } from 'lucide-react';
 
 interface HeaderProps {
@@ -110,7 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 border border-neutral-800 text-xs text-neutral-300">
             <span className="text-neutral-400">{t.rateLabel}</span>
             <span className="font-semibold text-amber-400 flex items-center gap-1">
-              1 <TikTokCoin size={14} /> = {formatUSD(coinRateUsd)}
+              1 <TikTokCoin size={14} /> = {formatRateUSD(coinRateUsd)}
             </span>
           </div>
 

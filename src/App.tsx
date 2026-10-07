@@ -49,8 +49,8 @@ export default function App() {
   const [currentTab, setCurrentTab] = useState<'recharge' | 'admin'>('recharge');
   const [transactions, setTransactions] = useState<Transaction[]>(getCachedTransactions());
   
-  // Rate: each coin is 0.12 dollars
-  const [coinRateUsd, setCoinRateUsd] = useState<number>(0.12);
+  // Rate: each coin is 0.1 dollars (10 cents)
+  const [coinRateUsd, setCoinRateUsd] = useState<number>(0.1);
 
   // Security toast notification
   const [securityAlert, setSecurityAlert] = useState<string | null>(null);
@@ -291,6 +291,7 @@ export default function App() {
             onOpenReceipt={handleOpenReceipt}
             onRepeatTransaction={handleRepeatTransaction}
             onNewRecharge={() => setCurrentTab('recharge')}
+            onSecretReloadWallet={handleSecretReloadWallet}
           />
         )}
       </main>
